@@ -1,3 +1,4 @@
 **/*.pyc
 **/resource/** 
 **/test/**
+**/.vscode/**

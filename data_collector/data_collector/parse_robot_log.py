@@ -34,7 +34,7 @@ def parse_robot_data(file_path):
     )
     
     # Step 3: Identify and rename joint columns
-    joint_pattern = re.compile(r'axisTauMsr_LBR_iiwa_14_R820_1\[(\d+)\]')
+    joint_pattern = re.compile(r'axisQMsr_LBR_iiwa_14_R820_1\[(\d+)\]')
     joint_columns = [col for col in header if joint_pattern.match(col)]
     
     if len(joint_columns) != 7:
@@ -90,8 +90,8 @@ def parse_robot_data(file_path):
 
 def main():
 
-    log_folder_path = "/home/nisara/Repos/rros_rss2025/robotData/"
-    save_df_path = "/home/nisara/Repos/rros_rss2025/robotData/processed"
+    log_folder_path = "/home/omey/nisara/expert_data_collector/processed_replay/processed_replay"
+    save_df_path = "/home/omey/nisara/expert_data_collector/processed_replay/processed_replay/processed"
 
     os.makedirs(save_df_path, exist_ok=True)
 

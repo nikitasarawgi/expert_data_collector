@@ -59,38 +59,38 @@ def convertToPickle(recorded_data_file_path, imageA_folder_path, imageB_folder_p
         curr_time = current_row["timestamp"]
         next_time = next_row["timestamp"]
 
-        curr_wrist_1_image = Image.open(os.path.join(imageA_folder_path, f"{curr_time}_A.png"))
-        curr_wrist_2_image = Image.open(os.path.join(imageB_folder_path, f"{curr_time}_B.png"))
+        curr_wrist_1_image = Image.open(os.path.join(imageA_folder_path, f"{curr_time}_A.jpg"))
+        curr_wrist_2_image = Image.open(os.path.join(imageB_folder_path, f"{curr_time}_B.jpg"))
 
-        next_wrist_1_image = Image.open(os.path.join(imageA_folder_path, f"{next_time}_A.png"))
-        next_wrist_2_image = Image.open(os.path.join(imageB_folder_path, f"{next_time}_B.png"))
+        next_wrist_1_image = Image.open(os.path.join(imageA_folder_path, f"{next_time}_A.jpg"))
+        next_wrist_2_image = Image.open(os.path.join(imageB_folder_path, f"{next_time}_B.jpg"))
 
         observation = {
             "state": np.concatenate([
-                current_row[['X', 'Y', 'Z', 'A', 'B', 'C']].values,
+                current_row[['X', 'Y', 'Z', 'Roll', 'Pitch', 'Yaw']].values,
                 current_row[['V1', 'V2', 'V3', 'V4', 'V5', 'V6']].values,
                 current_row[['Fx', 'Fy', 'Fz']].values,
                 current_row[['Tx', 'Ty', 'Tz']].values
             ]),
-            "wrist_1": curr_wrist_1_image,
-            "wrist_2": curr_wrist_2_image
+            "wrist_1": np.array(curr_wrist_1_image),
+            "wrist_2": np.array(curr_wrist_2_image)
         }
 
         action = next_row[['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7']].values - current_row[['P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7']].values
 
         next_observation = {
             "state": np.concatenate([
-                next_row[['X', 'Y', 'Z', 'A', 'B', 'C']].values,
+                next_row[['X', 'Y', 'Z', 'Roll', 'Pitch', 'Yaw']].values,
                 next_row[['V1', 'V2', 'V3', 'V4', 'V5', 'V6']].values,
                 next_row[['Fx', 'Fy', 'Fz']].values,
                 next_row[['Tx', 'Ty', 'Tz']].values
             ]),
-            "wrist_1": next_wrist_1_image,
-            "wrist_2": next_wrist_2_image
+            "wrist_1": np.array(next_wrist_1_image),
+            "wrist_2": np.array(next_wrist_2_image)
         }
 
         if done != 1.0:
-            tcp_pose = current_row[['X', 'Y', 'Z', 'A', 'B', 'C']].values
+            tcp_pose = current_row[['X', 'Y', 'Z', 'Roll', 'Pitch', 'Yaw']].values
             if np.all(np.abs(tcp_pose - TARGET_POSE) <= REWARD_THRESHOLD):
                 reward = 1.0
                 done = 1.0
@@ -105,6 +105,12 @@ def convertToPickle(recorded_data_file_path, imageA_folder_path, imageB_folder_p
         rewards.append(reward)
         masks.append(1.0 - done)
         dones.append(done)
+
+        curr_wrist_1_image.close()
+        curr_wrist_2_image.close()
+        next_wrist_1_image.close()
+        next_wrist_2_image.close()
+
 
     data_dict = {
         "observations": observations,
@@ -121,10 +127,10 @@ def convertToPickle(recorded_data_file_path, imageA_folder_path, imageB_folder_p
     print(f"Data saved to {output_pkl_file_path}")
 
 def main():
-    recorded_data_file_path = "/home/omey/nisara/expert_data_collector/processed_replay/processed_replay/processed/2021-09-17-16-45-14.csv"
-    imageA_folder_path = "/home/omey/nisara/expert_data_collector/processed_replay/processed_replay/processed/imagesA"
-    imageB_folder_path = "/home/omey/nisara/expert_data_collector/processed_replay/processed_replay/processed/imagesB"
-    output_pkl_file_path = "/home/omey/nisara/expert_data_collector/processed_replay/processed_replay/processed/2021-09-17-16-45-14.pkl"
+    recorded_data_file_path = "/home/omey/nisara/expert_data_collector/processed_replay/processed_replay/2013-01-01_01-09-43/recorded_data.csv"
+    imageA_folder_path = "/home/omey/nisara/expert_data_collector/processed_replay/processed_replay/2013-01-01_01-09-43/imageA"
+    imageB_folder_path = "/home/omey/nisara/expert_data_collector/processed_replay/processed_replay/2013-01-01_01-09-43/imageB"
+    output_pkl_file_path = "/home/omey/nisara/expert_data_collector/processed_replay/processed_replay/2013-01-01_01-09-43/recorded_data.pkl"
 
     convertToPickle(recorded_data_file_path, imageA_folder_path, imageB_folder_path, output_pkl_file_path)
 

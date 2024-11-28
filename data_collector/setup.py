@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'kuka_data_recorder = data_collector.kuka_data_recorder:main'
+            'kuka_data_recorder = data_collector.kuka_data_recorder:main',
+            'joint_cartesian_converter = data_collector.joint_cartesian_converter:main'
         ],
     },
 )

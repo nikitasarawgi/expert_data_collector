@@ -19,7 +19,7 @@ class KukaDataRecorder(Node):
         super().__init__("kuka_data_recorder")
 
         self.data_folder = "/home/omey/nisara/expert_data_collector/processed_replay/processed_replay/"
-        self.joint_states_file = "2013-01-01_01-10-14.csv"
+        self.joint_states_file = "2013-01-01_01-10-52.csv"
         self.save_data_folder = os.path.join(self.data_folder, os.path.splitext(self.joint_states_file)[0])
         os.makedirs(self.save_data_folder, exist_ok=True)
         # Create two folders for the images
@@ -82,12 +82,12 @@ class KukaDataRecorder(Node):
         data_row = {'timestamp': timestamp}
 
         for i in range(7):
-            # imp imp: Remember that kuka publishes A1, A2, A3, A4, A5, A7, A6 (NOTE THE ORDER)
+            # imp imp: Remember that kuka publishes A1, A2, A4, A3, A5, A6, A7 (NOTE THE ORDER)
             j = i
-            if i == 5:
-                j = 6
-            if i == 6: 
-                j = 5
+            if i == 3:
+                j = 4
+            if i == 4: 
+                j = 3
             data_row[f'P{j+1}'] = joint_state_msg.position[i]
             data_row[f'V{j+1}'] = joint_state_msg.velocity[i]
             data_row[f'E{j+1}'] = joint_state_msg.effort[i]

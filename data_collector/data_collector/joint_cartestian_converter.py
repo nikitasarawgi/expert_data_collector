@@ -104,6 +104,8 @@ class JointCartesianConverter(Node):
             self.joint_data.at[index, "P"] = euler_pose[1]
             self.joint_data.at[index, "Y"] = euler_pose[2]
 
+            # Compute the end_effector velocity
+
         self.joint_data.to_csv(self.joint_data_file_path, index=False)
 
 def main(args=None):

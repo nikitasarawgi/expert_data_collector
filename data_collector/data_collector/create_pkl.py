@@ -42,6 +42,8 @@ def convertToPickle(recorded_data_file_path, imageA_folder_path, imageB_folder_p
 
     recorded_data = pd.read_csv(recorded_data_file_path)
 
+    transitions = []
+
     observations = []
     actions = []
     next_observations = []
@@ -59,12 +61,16 @@ def convertToPickle(recorded_data_file_path, imageA_folder_path, imageB_folder_p
         curr_time = current_row["timestamp"]
         next_time = next_row["timestamp"]
 
-        curr_wrist_1_image = Image.open(os.path.join(imageA_folder_path, f"{curr_time}_A.jpg"))
-        curr_wrist_2_image = Image.open(os.path.join(imageB_folder_path, f"{curr_time}_B.jpg"))
+        img_size = (128, 128)
 
-        next_wrist_1_image = Image.open(os.path.join(imageA_folder_path, f"{next_time}_A.jpg"))
-        next_wrist_2_image = Image.open(os.path.join(imageB_folder_path, f"{next_time}_B.jpg"))
+        curr_wrist_1_image = Image.open(os.path.join(imageA_folder_path, f"{curr_time}_A.jpg")).resize(img_size)
+        curr_wrist_2_image = Image.open(os.path.join(imageB_folder_path, f"{curr_time}_B.jpg")).resize(img_size)
 
+        next_wrist_1_image = Image.open(os.path.join(imageA_folder_path, f"{next_time}_A.jpg")).resize(img_size)
+        next_wrist_2_image = Image.open(os.path.join(imageB_folder_path, f"{next_time}_B.jpg")).resize(img_size)
+
+
+        # print(np.array(curr_wrist_1_image).shape)
         observation = {
             "state": np.concatenate([
                 current_row[['X', 'Y', 'Z', 'Roll', 'Pitch', 'Yaw']].values,
@@ -99,12 +105,24 @@ def convertToPickle(recorded_data_file_path, imageA_folder_path, imageB_folder_p
         else:
             reward = 0.0
 
-        observations.append(observation)
-        actions.append(action)
-        next_observations.append(next_observation)
-        rewards.append(reward)
-        masks.append(1.0 - done)
-        dones.append(done)
+        
+        data_dict = {
+            "observations": observation,
+            "actions": action,
+            "next_observations": next_observation,
+            "rewards": reward,
+            "masks": 1.0 - done,
+            "dones": done
+        }
+
+        transitions.append(data_dict)
+
+        # observations.append(observation)
+        # actions.append(action)
+        # next_observations.append(next_observation)
+        # rewards.append(reward)
+        # masks.append(1.0 - done)
+        # dones.append(done)
 
         curr_wrist_1_image.close()
         curr_wrist_2_image.close()
@@ -112,17 +130,10 @@ def convertToPickle(recorded_data_file_path, imageA_folder_path, imageB_folder_p
         next_wrist_2_image.close()
 
 
-    data_dict = {
-        "observations": observations,
-        "actions": actions,
-        "next_observations": next_observations,
-        "rewards": rewards,
-        "masks": masks,
-        "dones": dones
-    }
+    
 
     with open(output_pkl_file_path, 'wb') as f:
-        pickle.dump(data_dict, f)
+        pickle.dump(transitions, f)
 
     print(f"Data saved to {output_pkl_file_path}")
 

@@ -25,6 +25,7 @@ import numpy as np
 import pandas as pd 
 import pickle 
 import os 
+import json
 from PIL import Image
 
 TARGET_POSE = np.array([
@@ -38,7 +39,7 @@ TARGET_POSE = np.array([
 
 REWARD_THRESHOLD = np.array([0.01, 0.01, 0.01, 0.2, 0.2, 0.2])
 
-def convertToPickle(recorded_data_file_path, imageA_folder_path, imageB_folder_path, output_pkl_file_path):
+def convertToPickle(recorded_data_file_path, imageA_folder_path, imageB_folder_path):
 
     recorded_data = pd.read_csv(recorded_data_file_path)
 
@@ -129,21 +130,31 @@ def convertToPickle(recorded_data_file_path, imageA_folder_path, imageB_folder_p
         next_wrist_1_image.close()
         next_wrist_2_image.close()
 
+    return transitions
 
+def main():
+
+    with open('config.json', 'r') as config_file:
+        config = json.load(config_file)
+    processed_folder_path = config['processed_csv_folder_path']
+    output_pkl_file_path = os.path.join(processed_folder_path, 'recorded_data.pkl')
+    all_transitions = []
     
+    for folder_name in os.listdir(processed_folder_path):
+        folder_path = os.path.join(processed_folder_path, folder_name)
+        if os.path.isdir(folder_path):
+            recorded_data_file_path = os.path.join(folder_path, 'recorded_data.csv')
+            imageA_folder_path = os.path.join(folder_path, 'imageA')
+            imageB_folder_path = os.path.join(folder_path, 'imageB')
+            if os.path.exists(recorded_data_file_path) and os.path.exists(imageA_folder_path) and os.path.exists(imageB_folder_path):
+                transitions = convertToPickle(recorded_data_file_path, imageA_folder_path, imageB_folder_path)
+                all_transitions.extend(transitions)
 
     with open(output_pkl_file_path, 'wb') as f:
-        pickle.dump(transitions, f)
+        pickle.dump(all_transitions, f)
 
     print(f"Data saved to {output_pkl_file_path}")
 
-def main():
-    recorded_data_file_path = "/home/omey/nisara/expert_data_collector/processed_replay/processed_replay/2013-01-01_01-09-43/recorded_data.csv"
-    imageA_folder_path = "/home/omey/nisara/expert_data_collector/processed_replay/processed_replay/2013-01-01_01-09-43/imageA"
-    imageB_folder_path = "/home/omey/nisara/expert_data_collector/processed_replay/processed_replay/2013-01-01_01-09-43/imageB"
-    output_pkl_file_path = "/home/omey/nisara/expert_data_collector/processed_replay/processed_replay/2013-01-01_01-09-43/recorded_data.pkl"
-
-    convertToPickle(recorded_data_file_path, imageA_folder_path, imageB_folder_path, output_pkl_file_path)
 
 if __name__ == "__main__":
     main()

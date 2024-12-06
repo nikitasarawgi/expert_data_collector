@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import csv
 import math
+import json
 from cv_bridge import CvBridge
 import cv2
 from rclpy.node import Node
@@ -15,11 +16,11 @@ from geometry_msgs.msg import WrenchStamped
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 
 class KukaDataRecorder(Node):
-    def __init__(self):
+    def __init__(self, data_folder, joint_states_file):
         super().__init__("kuka_data_recorder")
 
-        self.data_folder = "/home/omey/nisara/expert_data_collector/processed_replay/processed_replay/"
-        self.joint_states_file = "2013-01-01_01-10-52.csv"
+        self.data_folder = data_folder
+        self.joint_states_file = joint_states_file
         self.save_data_folder = os.path.join(self.data_folder, os.path.splitext(self.joint_states_file)[0])
         os.makedirs(self.save_data_folder, exist_ok=True)
         # Create two folders for the images
@@ -135,7 +136,6 @@ class KukaDataRecorder(Node):
         point.time_from_start.sec = 4  # Set the seconds part to 0
 
         trajectory_msg.points.append(point)
-        print("Trajectory msg: ", trajectory_msg)
         goal_msg.trajectory = trajectory_msg
         self._action_client.wait_for_server()
 
@@ -154,6 +154,7 @@ class KukaDataRecorder(Node):
         rclpy.spin_until_future_complete(self, get_result_future)
         result = get_result_future.result().result
         self.get_logger().info(f"Result : {result}, Initial position reached")
+        print("Press Enter to continue ...")
         input()
 
     def executeTrajectory(self):
@@ -219,9 +220,15 @@ class KukaDataRecorder(Node):
         self.get_logger().info("Saved data!")
 
 def main(args=None):
+
+    with open('config.json', 'r') as config_file:
+        config = json.load(config_file)
+    
+    data_folder = config['log_folder_path']
+    joint_states_file = config['replay_csv_name']
     rclpy.init(args=args)
     executor = MultiThreadedExecutor()
-    node = KukaDataRecorder()
+    node = KukaDataRecorder(data_folder=data_folder, joint_states_file=joint_states_file)
     executor.add_node(node)
     try:
         

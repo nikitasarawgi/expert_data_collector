@@ -7,6 +7,8 @@ from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
 
 import numpy as np
 import pandas as pd
+import json
+import os
 from scipy.spatial.transform import Rotation as R
 
 from geometry_msgs.msg import Pose, Point, Quaternion, PoseStamped
@@ -23,8 +25,6 @@ from moveit_msgs.srv import GetPositionFK
 
 class JointCartesianConverter(Node):
 
-    joint_data_file_path = "/home/omey/nisara/expert_data_collector/processed_replay/processed_replay/2013-01-01_01-09-43/recorded_data.csv"
-    
     move_group_name_ = "arm"
     namespace_ = "lbr"
 
@@ -40,9 +40,10 @@ class JointCartesianConverter(Node):
     base_ = "link_0"
     end_effector_ = "link_ee"
 
-    def __init__(self):
+    def __init__(self, joint_data_file_path):
         super().__init__("joint_cartesian_converter")
 
+        self.joint_data_file_path = joint_data_file_path
         self.fk_client_callback = MutuallyExclusiveCallbackGroup()
         self.fk_client_ = self.create_client(GetPositionFK, f"{self.namespace_}/{self.fk_srv_name_}", callback_group=self.fk_client_callback)
         if not self.fk_client_.wait_for_service(timeout_sec=5.0):
@@ -112,7 +113,15 @@ class JointCartesianConverter(Node):
 def main(args=None):
     rclpy.init(args=args)
 
-    joint_cartesian_converter = JointCartesianConverter()
+    with open('config.json', 'r') as config_file:
+        config = json.load(config_file)
+
+    processed_folder_path = config['processed_csv_folder_path']
+    csv_name = config['replay_csv_name']
+    csv_folder = os.path.join(processed_folder_path, os.path.splitext(csv_folder)[0])
+    joint_data_file_path = os.path.join(csv_folder, 'recorded_data.csv')
+
+    joint_cartesian_converter = JointCartesianConverter(joint_data_file_path)
     joint_cartesian_converter.convert()
 
     rclpy.shutdown()

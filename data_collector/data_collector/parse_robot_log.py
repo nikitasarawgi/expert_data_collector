@@ -1,4 +1,5 @@
 import pandas as pd
+import json
 import re
 import os
 import glob
@@ -90,8 +91,11 @@ def parse_robot_data(file_path):
 
 def main():
 
-    log_folder_path = "/home/omey/nisara/expert_data_collector/processed_replay/processed_replay"
-    save_df_path = "/home/omey/nisara/expert_data_collector/processed_replay/processed_replay/processed"
+    with open('config.json', 'r') as config_file:
+        config = json.load(config_file)
+
+    log_folder_path = config['log_folder_path']
+    save_df_path = config['processed_csv_folder_path']
 
     os.makedirs(save_df_path, exist_ok=True)
 

@@ -1,8 +1,0 @@
-**/*.pyc
-**/resource/** 
-**/test/**
-**/.vscode/**
-
-**/build/** 
-**/install/** 
-**/log/** 
